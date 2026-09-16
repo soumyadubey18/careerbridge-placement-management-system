@@ -2,6 +2,8 @@
 
 CareerBridge is a full-stack Training & Placement Management System for training institutes. It brings student records, batches, attendance, mock assessments, interviews, projects, and placement outcomes into one operational workspace.
 
+Project presentation: [CareerBridge_Project_Presentation.pptx](CareerBridge_Project_Presentation.pptx)
+
 The application is designed around a practical institute workflow:
 
 > Login -> add a student -> assign a batch -> monitor attendance -> review assessments -> track projects -> manage placement applications.
@@ -218,10 +220,14 @@ The API base URL is `http://localhost:4000/api`.
 | `GET`  | `/students?q=...` | Yes  | List or search students                   |
 | `POST` | `/students`       | Yes  | Create a student and assign a batch       |
 | `GET`  | `/batches`        | Yes  | List batches with student counts          |
+| `POST` | `/batches`        | Yes  | Create a batch                            |
 | `GET`  | `/meta`           | Yes  | Return lookup values used by forms        |
 | `GET`  | `/attendance`     | Yes  | Return student attendance and percentages |
+| `POST` | `/attendance`     | Yes  | Record present or absent attendance       |
 | `GET`  | `/projects`       | Yes  | Return projects with team members         |
+| `POST` | `/projects`       | Yes  | Create a project                          |
 | `GET`  | `/placements`     | Yes  | Return companies and applications         |
+| `POST` | `/placements`     | Yes  | Create a placement opening                |
 
 Example login request:
 

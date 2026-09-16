@@ -40,6 +40,7 @@ type ToastItem = {
   message: string;
   tone: "success" | "info" | "error";
 };
+type ActionKind = "batch" | "attendance" | "project" | "opening";
 const API = "http://localhost:4000/api";
 const nav: { id: View; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -71,6 +72,7 @@ export default function App() {
   const [placements, setPlacements] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(false);
+  const [actionModal, setActionModal] = useState<ActionKind | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const notify = (message: string, tone: ToastItem["tone"] = "success") => {
@@ -146,6 +148,31 @@ export default function App() {
     });
     const body = await result.json();
     if (!result.ok) throw new Error(body.error);
+  };
+  const submitAction = async (
+    kind: ActionKind,
+    payload: Record<string, unknown>,
+  ) => {
+    const paths: Record<ActionKind, string> = {
+      batch: "/batches",
+      attendance: "/attendance",
+      project: "/projects",
+      opening: "/placements",
+    };
+    await request(paths[kind], {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    setActionModal(null);
+    await load();
+    notify(
+      {
+        batch: "Batch created.",
+        attendance: "Attendance recorded.",
+        project: "Project created.",
+        opening: "Placement opening added.",
+      }[kind],
+    );
   };
   if (!token) return <Login onLogin={login} onRegister={register} />;
   return (
@@ -259,16 +286,26 @@ export default function App() {
             />
           )}
           {view === "batches" && (
-            <Batches batches={batches} onNotify={notify} />
+            <Batches batches={batches} onOpen={() => setActionModal("batch")} />
           )}
           {view === "attendance" && (
-            <Attendance rows={attendance} onNotify={notify} />
+            <Attendance
+              rows={attendance}
+              onOpen={() => setActionModal("attendance")}
+            />
           )}
           {view === "projects" && (
-            <Projects projects={projects} onNotify={notify} />
+            <Projects
+              projects={projects}
+              onOpen={() => setActionModal("project")}
+              onNotify={notify}
+            />
           )}
           {view === "placements" && (
-            <Placements companies={placements} onNotify={notify} />
+            <Placements
+              companies={placements}
+              onOpen={() => setActionModal("opening")}
+            />
           )}
         </div>
       </main>
@@ -285,6 +322,16 @@ export default function App() {
             await load();
             notify("Student added to the workspace.");
           }}
+        />
+      )}
+      {actionModal && (
+        <ActionModal
+          kind={actionModal}
+          students={students}
+          onClose={() => setActionModal(null)}
+          onSave={(payload: Record<string, unknown>) =>
+            submitAction(actionModal, payload)
+          }
         />
       )}
       <ToastRegion
@@ -783,7 +830,7 @@ function Students({ students, batches, onOpen }: any) {
     </>
   );
 }
-function Batches({ batches, onNotify }: any) {
+function Batches({ batches, onOpen }: any) {
   return (
     <>
       <PageHead
@@ -791,15 +838,7 @@ function Batches({ batches, onNotify }: any) {
         title="Batches"
         subtitle="Keep every cohort moving in the same direction."
         action={
-          <button
-            className="primary"
-            onClick={() =>
-              onNotify(
-                "Batch creation is ready for the next workflow step.",
-                "info",
-              )
-            }
-          >
+          <button className="primary" onClick={onOpen}>
             <Plus size={17} /> New batch
           </button>
         }
@@ -833,7 +872,7 @@ function Batches({ batches, onNotify }: any) {
     </>
   );
 }
-function Attendance({ rows, onNotify }: any) {
+function Attendance({ rows, onOpen }: any) {
   return (
     <>
       <PageHead
@@ -841,15 +880,7 @@ function Attendance({ rows, onNotify }: any) {
         title="Attendance"
         subtitle="A quick read on consistency and momentum."
         action={
-          <button
-            className="primary"
-            onClick={() =>
-              onNotify(
-                "Attendance marking is ready for the next workflow step.",
-                "info",
-              )
-            }
-          >
+          <button className="primary" onClick={onOpen}>
             <Plus size={17} /> Mark attendance
           </button>
         }
@@ -937,7 +968,7 @@ function Attendance({ rows, onNotify }: any) {
     </>
   );
 }
-function Projects({ projects, onNotify }: any) {
+function Projects({ projects, onOpen, onNotify }: any) {
   return (
     <>
       <PageHead
@@ -945,15 +976,7 @@ function Projects({ projects, onNotify }: any) {
         title="Projects"
         subtitle="See what teams are building and what needs a push."
         action={
-          <button
-            className="primary"
-            onClick={() =>
-              onNotify(
-                "Project creation is ready for the next workflow step.",
-                "info",
-              )
-            }
-          >
+          <button className="primary" onClick={onOpen}>
             <Plus size={17} /> New project
           </button>
         }
@@ -997,7 +1020,7 @@ function Projects({ projects, onNotify }: any) {
     </>
   );
 }
-function Placements({ companies, onNotify }: any) {
+function Placements({ companies, onOpen }: any) {
   const all = companies.flatMap((c: any) =>
     c.applications.map((a: any) => ({ ...a, company: c })),
   );
@@ -1008,15 +1031,7 @@ function Placements({ companies, onNotify }: any) {
         title="Placement pipeline"
         subtitle="Turn every application into a clear next step."
         action={
-          <button
-            className="primary"
-            onClick={() =>
-              onNotify(
-                "Opening creation is ready for the next workflow step.",
-                "info",
-              )
-            }
-          >
+          <button className="primary" onClick={onOpen}>
             <Plus size={17} /> Add opening
           </button>
         }
@@ -1124,6 +1139,158 @@ function Pipeline({ placements }: any) {
         ))}
       </tbody>
     </table>
+  );
+}
+function ActionModal({
+  kind,
+  students,
+  onClose,
+  onSave,
+}: {
+  kind: ActionKind;
+  students: any[];
+  onClose: () => void;
+  onSave: (payload: Record<string, unknown>) => void;
+}) {
+  const [form, setForm] = useState<Record<string, string>>({
+    studentId: students[0]?.id?.toString() || "",
+    status: "PRESENT",
+    date: new Date().toISOString().slice(0, 10),
+  });
+  const labels: Record<ActionKind, { eyebrow: string; title: string }> = {
+    batch: { eyebrow: "PROGRAM RECORD", title: "Create batch" },
+    attendance: { eyebrow: "DAILY RECORD", title: "Mark attendance" },
+    project: { eyebrow: "WORK RECORD", title: "Create project" },
+    opening: { eyebrow: "HIRING RECORD", title: "Add placement opening" },
+  };
+  const fields: Record<
+    ActionKind,
+    { key: string; label: string; placeholder: string; type?: string }[]
+  > = {
+    batch: [
+      {
+        key: "name",
+        label: "Batch name",
+        placeholder: "Cohort 27 · Full Stack",
+      },
+      { key: "course", label: "Course", placeholder: "Full Stack Engineering" },
+      { key: "trainer", label: "Trainer", placeholder: "Trainer name" },
+      {
+        key: "schedule",
+        label: "Schedule",
+        placeholder: "Mon, Wed, Fri · 10:00 AM",
+      },
+      { key: "startDate", label: "Start date", placeholder: "", type: "date" },
+    ],
+    attendance: [],
+    project: [
+      { key: "title", label: "Project title", placeholder: "Campus Connect" },
+      {
+        key: "description",
+        label: "Description",
+        placeholder: "What is the team building?",
+      },
+      { key: "dueDate", label: "Due date", placeholder: "", type: "date" },
+    ],
+    opening: [
+      { key: "name", label: "Company name", placeholder: "Vertex Labs" },
+      { key: "role", label: "Job role", placeholder: "Frontend Engineer" },
+      { key: "jobCode", label: "Job code", placeholder: "VX-FE-042" },
+      { key: "location", label: "Location", placeholder: "Bengaluru" },
+    ],
+  };
+  return (
+    <div className="modal-backdrop">
+      <form
+        className="modal"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSave({
+            ...form,
+            ...(kind === "attendance"
+              ? { studentId: Number(form.studentId) }
+              : {}),
+          });
+        }}
+      >
+        <div className="modal-head">
+          <div>
+            <p className="eyebrow">{labels[kind].eyebrow}</p>
+            <h2>{labels[kind].title}</h2>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+        {kind === "attendance" ? (
+          <>
+            <label>
+              Student
+              <select
+                required
+                value={form.studentId}
+                onChange={(event) =>
+                  setForm({ ...form, studentId: event.target.value })
+                }
+              >
+                {students.map((student: any) => (
+                  <option key={student.id} value={student.id}>
+                    {student.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Date
+              <input
+                required
+                type="date"
+                value={form.date}
+                onChange={(event) =>
+                  setForm({ ...form, date: event.target.value })
+                }
+              />
+            </label>
+            <label>
+              Status
+              <select
+                required
+                value={form.status}
+                onChange={(event) =>
+                  setForm({ ...form, status: event.target.value })
+                }
+              >
+                <option value="PRESENT">Present</option>
+                <option value="ABSENT">Absent</option>
+              </select>
+            </label>
+          </>
+        ) : (
+          fields[kind].map((field) => (
+            <label key={field.key}>
+              {field.label}
+              <input
+                required
+                type={field.type || "text"}
+                placeholder={field.placeholder}
+                value={form[field.key] || ""}
+                onChange={(event) =>
+                  setForm({ ...form, [field.key]: event.target.value })
+                }
+              />
+            </label>
+          ))
+        )}
+        <div className="modal-actions">
+          <button type="button" className="secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="primary" type="submit">
+            Save record <ArrowUpRight size={16} />
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 function StudentModal({ batches, onClose, onSave }: any) {

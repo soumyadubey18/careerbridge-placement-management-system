@@ -51,12 +51,10 @@ app.post("/api/auth/register", async (req, res) => {
     })
     .safeParse(req.body);
   if (!parsed.success)
-    return res
-      .status(400)
-      .json({
-        error:
-          "Enter a name, valid email, and password with at least 6 characters",
-      });
+    return res.status(400).json({
+      error:
+        "Enter a name, valid email, and password with at least 6 characters",
+    });
   const existingUser = await prisma.user.findUnique({
     where: { email: parsed.data.email },
   });
@@ -150,6 +148,20 @@ app.post("/api/students", auth, async (req, res) => {
     }),
   );
 });
+app.post("/api/batches", auth, async (req, res) => {
+  const parsed = z
+    .object({
+      name: z.string().min(2),
+      course: z.string().min(2),
+      trainer: z.string().min(2),
+      schedule: z.string().min(2),
+      startDate: z.coerce.date(),
+    })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res.status(400).json({ error: "Please complete all batch fields" });
+  res.status(201).json(await prisma.batch.create({ data: parsed.data }));
+});
 app.get("/api/batches", auth, async (_req, res) =>
   res.json(
     await prisma.batch.findMany({
@@ -183,6 +195,20 @@ app.get("/api/attendance", auth, async (_req, res) => {
     })),
   );
 });
+app.post("/api/attendance", auth, async (req, res) => {
+  const parsed = z
+    .object({
+      studentId: z.coerce.number(),
+      date: z.coerce.date(),
+      status: z.enum(["PRESENT", "ABSENT"]),
+    })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res
+      .status(400)
+      .json({ error: "Please choose a student, date, and status" });
+  res.status(201).json(await prisma.attendance.create({ data: parsed.data }));
+});
 app.get("/api/projects", auth, async (_req, res) =>
   res.json(
     await prisma.project.findMany({
@@ -191,6 +217,20 @@ app.get("/api/projects", auth, async (_req, res) =>
     }),
   ),
 );
+app.post("/api/projects", auth, async (req, res) => {
+  const parsed = z
+    .object({
+      title: z.string().min(2),
+      description: z.string().min(2),
+      dueDate: z.coerce.date(),
+    })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res
+      .status(400)
+      .json({ error: "Please complete all project fields" });
+  res.status(201).json(await prisma.project.create({ data: parsed.data }));
+});
 app.get("/api/placements", auth, async (_req, res) =>
   res.json(
     await prisma.company.findMany({
@@ -198,6 +238,21 @@ app.get("/api/placements", auth, async (_req, res) =>
     }),
   ),
 );
+app.post("/api/placements", auth, async (req, res) => {
+  const parsed = z
+    .object({
+      name: z.string().min(2),
+      role: z.string().min(2),
+      jobCode: z.string().min(2),
+      location: z.string().min(2),
+    })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res
+      .status(400)
+      .json({ error: "Please complete all opening fields" });
+  res.status(201).json(await prisma.company.create({ data: parsed.data }));
+});
 app.use(
   (
     _err: Error,
