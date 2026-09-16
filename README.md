@@ -27,16 +27,14 @@ The application is designed around a practical institute workflow:
 
 ### Authentication
 
-- Provides a login screen for institute staff.
-- Validates email and password on the server.
-- Stores passwords as bcrypt hashes rather than plain text.
-- Creates an eight-hour JWT session after a successful login.
-- Sends the JWT as a Bearer token with protected API requests.
-- Supports the roles `ADMIN`, `TRAINER`, and `PLACEMENT` in the database and login response.
+Provides login and signup screens for institute users.
+Supports the roles `ADMIN`, `TRAINER`, `PLACEMENT`, and `STUDENT` in the database and login response.
+Signup creates a student account with a bcrypt-hashed password.
 
 ### Student management
 
 - Displays student name, email, phone, status, batch, and joining date.
+  | `POST` | `/auth/register` | No | Create a student account |
 - Searches students by name or email.
 - Adds a new student through a validated form.
 - Assigns a student to an existing batch.
@@ -49,6 +47,19 @@ The application is designed around a practical institute workflow:
 - Keeps the batch relationship on every student record.
 
 ### Attendance management
+
+Example signup request:
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+	"name": "Student Name",
+	"email": "student@example.com",
+	"password": "secure123"
+}
+```
 
 - Stores one attendance record per student and session date.
 - Tracks `PRESENT` and `ABSENT` values.

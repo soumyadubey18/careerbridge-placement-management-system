@@ -42,6 +42,34 @@ app.post("/api/auth/login", async (req, res) => {
   );
   res.json({ token, user: { name: user.name, role: user.role } });
 });
+app.post("/api/auth/register", async (req, res) => {
+  const parsed = z
+    .object({
+      name: z.string().trim().min(2),
+      email: z.string().email(),
+      password: z.string().min(6),
+    })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res
+      .status(400)
+      .json({
+        error:
+          "Enter a name, valid email, and password with at least 6 characters",
+      });
+  const existingUser = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+  });
+  if (existingUser)
+    return res
+      .status(409)
+      .json({ error: "An account with this email already exists" });
+  const password = await bcrypt.hash(parsed.data.password, 10);
+  await prisma.user.create({
+    data: { ...parsed.data, password, role: Role.STUDENT },
+  });
+  res.status(201).json({ message: "Account created successfully" });
+});
 app.get("/api/dashboard", auth, async (_req, res) => {
   const [
     students,
@@ -115,14 +143,12 @@ app.post("/api/students", auth, async (req, res) => {
     return res
       .status(400)
       .json({ error: "Please complete all student fields" });
-  res
-    .status(201)
-    .json(
-      await prisma.student.create({
-        data: parsed.data,
-        include: { batch: true },
-      }),
-    );
+  res.status(201).json(
+    await prisma.student.create({
+      data: parsed.data,
+      include: { batch: true },
+    }),
+  );
 });
 app.get("/api/batches", auth, async (_req, res) =>
   res.json(

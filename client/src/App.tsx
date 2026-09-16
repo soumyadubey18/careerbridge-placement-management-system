@@ -138,7 +138,16 @@ export default function App() {
     setToken("");
     setUser(null);
   };
-  if (!token) return <Login onLogin={login} />;
+  const register = async (name: string, email: string, password: string) => {
+    const result = await fetch(`${API}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const body = await result.json();
+    if (!result.ok) throw new Error(body.error);
+  };
+  if (!token) return <Login onLogin={login} onRegister={register} />;
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -314,15 +323,36 @@ function ToastRegion({
 }
 function Login({
   onLogin,
+  onRegister,
 }: {
   onLogin: (email: string, password: string) => Promise<void>;
+  onRegister: (name: string, email: string, password: string) => Promise<void>;
 }) {
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
     try {
+      if (mode === "signup") {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          return;
+        }
+        await onRegister(name, email, password);
+        setMode("login");
+        setName("");
+        setPassword("");
+        setConfirmPassword("");
+        setSuccess("Account created. You can sign in now.");
+        return;
+      }
       await onLogin(email, password);
     } catch (err) {
       setError((err as Error).message);
@@ -359,10 +389,29 @@ function Login({
       </div>
       <form className="login-form" onSubmit={submit}>
         <div className="form-heading">
-          <p className="eyebrow">WELCOME BACK</p>
-          <h2>Good to see you.</h2>
-          <p>Sign in to your operations workspace.</p>
+          <p className="eyebrow">
+            {mode === "login" ? "WELCOME BACK" : "JOIN CAREERBRIDGE"}
+          </p>
+          <h2>
+            {mode === "login" ? "Good to see you." : "Create your account."}
+          </h2>
+          <p>
+            {mode === "login"
+              ? "Sign in to your operations workspace."
+              : "Create a student account to get started."}
+          </p>
         </div>
+        {mode === "signup" && (
+          <label>
+            Full name
+            <input
+              required
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+        )}
         <label>
           Email address
           <input
@@ -386,9 +435,36 @@ function Login({
             <span>Show</span>
           </div>
         </label>
+        {mode === "signup" && (
+          <label>
+            Confirm password
+            <input
+              required
+              type="password"
+              placeholder="Re-enter your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </label>
+        )}
         {error && <div className="error">{error}</div>}
-        <button className="primary wide">
-          Sign in <ArrowUpRight size={17} />
+        {success && <div className="success-message">{success}</div>}
+        <button className="primary wide" type="submit">
+          {mode === "login" ? "Sign in" : "Create account"}{" "}
+          <ArrowUpRight size={17} />
+        </button>
+        <button
+          className="auth-switch"
+          type="button"
+          onClick={() => {
+            setMode(mode === "login" ? "signup" : "login");
+            setError("");
+            setSuccess("");
+          }}
+        >
+          {mode === "login"
+            ? "New student? Create an account"
+            : "Already have an account? Sign in"}
         </button>
       </form>
     </div>

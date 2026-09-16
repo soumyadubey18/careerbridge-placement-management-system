@@ -1003,6 +1003,27 @@ td span {
   justify-content: space-between;
   margin-bottom: 25px;
 }
+.success-message {
+  background: #e2f1ec;
+  color: #28776d;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  margin-bottom: 15px;
+}
+.auth-switch {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--teal);
+  cursor: pointer;
+  font: 600 11px "DM Sans";
+  margin-top: 17px;
+}
+.auth-switch:hover {
+  text-decoration: underline;
+}
 .modal-head h2 {
   font-size: 24px;
 }
