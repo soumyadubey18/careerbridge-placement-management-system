@@ -1,0 +1,151 @@
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "sqlite"
+	url      = env("DATABASE_URL")
+}
+
+enum Role {
+	ADMIN
+	TRAINER
+	PLACEMENT
+}
+
+enum StudentStatus {
+	ACTIVE
+	ON_HOLD
+	PLACED
+	ALUMNI
+}
+
+enum AttendanceStatus {
+	PRESENT
+	ABSENT
+}
+
+enum ProjectStatus {
+	NOT_STARTED
+	IN_PROGRESS
+	SUBMITTED
+	COMPLETED
+}
+
+enum ApplicationStatus {
+	APPLIED
+	SCREENING
+	INTERVIEW
+	SELECTED
+	REJECTED
+}
+
+model User {
+	id        Int      @id @default(autoincrement())
+	name      String
+	email     String   @unique
+	password  String
+	role      Role
+	createdAt DateTime @default(now())
+}
+
+model Batch {
+	id        Int       @id @default(autoincrement())
+	name      String
+	course    String
+	trainer   String
+	schedule  String
+	startDate DateTime
+	students  Student[]
+	createdAt DateTime  @default(now())
+}
+
+model Student {
+	id           Int             @id @default(autoincrement())
+	name         String
+	email        String
+	phone        String
+	status       StudentStatus   @default(ACTIVE)
+	joinedAt     DateTime        @default(now())
+	batchId      Int
+	batch        Batch           @relation(fields: [batchId], references: [id])
+	attendance   Attendance[]
+	results      TestResult[]
+	interviews   Interview[]
+	projects     ProjectMember[]
+	applications Application[]
+}
+
+model Attendance {
+	id        Int              @id @default(autoincrement())
+	date      DateTime
+	status    AttendanceStatus
+	studentId Int
+	student   Student          @relation(fields: [studentId], references: [id])
+}
+
+model MockTest {
+	id      Int          @id @default(autoincrement())
+	title   String
+	topic   String
+	date    DateTime
+	results TestResult[]
+}
+
+model TestResult {
+	id        Int      @id @default(autoincrement())
+	score     Int
+	testId    Int
+	studentId Int
+	test      MockTest @relation(fields: [testId], references: [id])
+	student   Student  @relation(fields: [studentId], references: [id])
+}
+
+model Interview {
+	id         Int     @id @default(autoincrement())
+	date       DateTime
+	round      String
+	interviewer String
+	attended   Boolean @default(false)
+	feedback   String?
+	score      Int?
+	studentId  Int
+	student    Student @relation(fields: [studentId], references: [id])
+}
+
+model Project {
+	id          Int             @id @default(autoincrement())
+	title       String
+	description String
+	status      ProjectStatus   @default(NOT_STARTED)
+	dueDate     DateTime
+	evaluation  Int?
+	members     ProjectMember[]
+}
+
+model ProjectMember {
+	id        Int     @id @default(autoincrement())
+	studentId Int
+	projectId Int
+	student   Student @relation(fields: [studentId], references: [id])
+	project   Project @relation(fields: [projectId], references: [id])
+}
+
+model Company {
+	id           Int           @id @default(autoincrement())
+	name         String
+	role         String
+	jobCode      String
+	location     String
+	applications Application[]
+}
+
+model Application {
+	id        Int               @id @default(autoincrement())
+	status    ApplicationStatus @default(APPLIED)
+	ctc       String?
+	companyId Int
+	studentId Int
+	company   Company           @relation(fields: [companyId], references: [id])
+	student   Student           @relation(fields: [studentId], references: [id])
+}
