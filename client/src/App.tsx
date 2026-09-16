@@ -12,6 +12,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Mail,
   Menu,
   Plus,
   Search,
@@ -70,6 +71,7 @@ export default function App() {
   const [placements, setPlacements] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const notify = (message: string, tone: ToastItem["tone"] = "success") => {
     const id = Date.now();
@@ -202,11 +204,25 @@ export default function App() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <button className="icon-button notification">
+            <button
+              className="icon-button notification"
+              title="Notifications"
+              onClick={() => setNotificationsOpen((current) => !current)}
+            >
               <Bell size={18} />
               <i />
             </button>
             <div className="avatar avatar-top">{user?.name?.slice(0, 1)}</div>
+            {notificationsOpen && (
+              <NotificationPanel
+                students={students}
+                onClose={() => setNotificationsOpen(false)}
+                onOpen={() => {
+                  setNotificationsOpen(false);
+                  setView("students");
+                }}
+              />
+            )}
           </div>
         </header>
         <div className="content">
@@ -558,6 +574,51 @@ function FocusItem({ icon, title, detail, action, color, onClick }: any) {
     </div>
   );
 }
+function NotificationPanel({ students, onClose, onOpen }: any) {
+  return (
+    <div className="notification-panel">
+      <div className="notification-panel-head">
+        <div>
+          <p className="eyebrow">INBOX</p>
+          <h3>Recent notifications</h3>
+        </div>
+        <button
+          className="icon-button"
+          onClick={onClose}
+          aria-label="Close notifications"
+        >
+          <X size={16} />
+        </button>
+      </div>
+      <div className="notification-list">
+        {students.slice(0, 4).map((student: any) => (
+          <a
+            className="notification-item"
+            href={`mailto:${student.email}`}
+            key={student.id}
+            onClick={onClose}
+          >
+            <div className="notification-icon">
+              <Mail size={15} />
+            </div>
+            <div>
+              <strong>{student.name}</strong>
+              <span>{student.email}</span>
+            </div>
+          </a>
+        ))}
+        {!students.length && (
+          <span className="notification-empty">
+            No student email notifications yet.
+          </span>
+        )}
+      </div>
+      <button className="text-button notification-footer" onClick={onOpen}>
+        Open student directory <ArrowUpRight size={14} />
+      </button>
+    </div>
+  );
+}
 function CalendarItem({ date, type, title, meta, color, onClick }: any) {
   return (
     <button className="calendar-item" onClick={onClick} type="button">
@@ -620,7 +681,9 @@ function Students({ students, batches, onOpen }: any) {
                     <div className="avatar soft">{s.name.slice(0, 1)}</div>
                     <div>
                       <strong>{s.name}</strong>
-                      <span>{s.email}</span>
+                      <a className="student-email" href={`mailto:${s.email}`}>
+                        {s.email}
+                      </a>
                     </div>
                   </div>
                 </td>
