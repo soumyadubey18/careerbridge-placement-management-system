@@ -1,6 +1,3 @@
-Email: admin@northstar.dev
-Password: demo123
-
 # CareerBridge Placement Management System
 
 CareerBridge is a full-stack Training & Placement Management System for training institutes. It brings student records, batches, attendance, mock assessments, interviews, projects, and placement outcomes into one operational workspace.

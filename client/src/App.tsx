@@ -301,8 +301,8 @@ function Login({
 }: {
   onLogin: (email: string, password: string) => Promise<void>;
 }) {
-  const [email, setEmail] = useState("admin@northstar.dev");
-  const [password, setPassword] = useState("demo123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -350,7 +350,9 @@ function Login({
         <label>
           Email address
           <input
+            required
             type="email"
+            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -359,7 +361,9 @@ function Login({
           Password
           <div className="password">
             <input
+              required
               type="password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -370,9 +374,6 @@ function Login({
         <button className="primary wide">
           Sign in <ArrowUpRight size={17} />
         </button>
-        <p className="demo-note">
-          Demo access is pre-filled · password: demo123
-        </p>
       </form>
     </div>
   );
