@@ -3,4 +3,5 @@ client/dist/
 server/dist/
 server/prisma/*.db
 server/prisma/*.db-journal
+*.tsbuildinfo
 .env
