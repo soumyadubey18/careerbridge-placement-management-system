@@ -2,7 +2,7 @@
 
 CareerBridge is a full-stack Training & Placement Management System for training institutes. It brings student records, batches, attendance, mock assessments, interviews, projects, and placement outcomes into one operational workspace.
 
-Project presentation: [CareerBridge_Project_Presentation.pptx](CareerBridge_Project_Presentation.pptx)
+Project presentation: [CareerBridge_Project_Presentation_Final.pptx](CareerBridge_Project_Presentation_Final.pptx)
 
 The application is designed around a practical institute workflow:
 
