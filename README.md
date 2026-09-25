@@ -4,6 +4,12 @@ CareerBridge is an enterprise-grade Training & Placement Management System desig
 
 ---
 
+## Live Demo
+
+**CareerBridge Live Application:** https://careerbridge-placement-management.netlify.app
+
+---
+
 ## Table of Contents
 
 - [Key Highlights & Operational Workflow](#key-highlights--operational-workflow)
