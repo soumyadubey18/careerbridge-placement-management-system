@@ -1,34 +1,28 @@
 import React, { useState } from 'react';
 import {
-  GraduationCap,
   Lock,
   Mail,
   User,
   Phone,
-  Building,
   Eye,
   EyeOff,
-  CheckCircle2,
   AlertCircle,
-  Briefcase,
-  Layers,
-  Sparkles,
   ArrowRight,
+  Shield,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Role } from '../types';
 
 export const AuthPage: React.FC = () => {
-  const { login, register, batches, notification } = useApp();
+  const { login, register, batches } = useApp();
 
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState('dubeysoumya8@gmail.com');
-  const [loginPassword, setLoginPassword] = useState('demo123');
+  // Login form state - clean defaults
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Sign up form state
   const [signupData, setSignupData] = useState({
@@ -48,7 +42,7 @@ export const AuthPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(loginEmail, loginPassword);
+      await login(loginEmail.trim(), loginPassword);
     } catch (err: any) {
       setErrorMessage(err.message || 'Invalid credentials. Please verify your email and password.');
     } finally {
@@ -63,13 +57,13 @@ export const AuthPage: React.FC = () => {
 
     try {
       await register({
-        name: signupData.name,
-        email: signupData.email,
+        name: signupData.name.trim(),
+        email: signupData.email.trim(),
         password: signupData.password,
-        phone: signupData.phone,
+        phone: signupData.phone.trim(),
         batchId: signupData.batchId,
-        college: signupData.college,
-        degree: signupData.degree,
+        college: signupData.college.trim(),
+        degree: signupData.degree.trim(),
         cgpa: Number(signupData.cgpa),
       });
     } catch (err: any) {
@@ -77,42 +71,6 @@ export const AuthPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Quick fill accounts
-  const demoAccounts = [
-    {
-      role: 'ADMIN' as Role,
-      name: 'Soumya Dubey — Admin',
-      email: 'dubeysoumya8@gmail.com',
-      desc: 'Institutional Director & Full System Administrator',
-    },
-    {
-      role: 'TRAINER' as Role,
-      name: 'Soumya Dubey — Trainer',
-      email: 'dubeysoumya8@gmail.com',
-      desc: 'Lead Cohort Trainer (Attendance & Grading)',
-    },
-    {
-      role: 'PLACEMENT' as Role,
-      name: 'Soumya Dubey — Placement Officer',
-      email: 'dubeysoumya8@gmail.com',
-      desc: 'Placement Officer (Campus Drives & Offers)',
-    },
-    {
-      role: 'STUDENT' as Role,
-      name: 'Rahul Verma — Student Trainee',
-      email: 'rahul.verma@example.com',
-      desc: 'Enrolled Trainee (Tests, Projects & Job Drives)',
-    },
-  ];
-
-  const handleQuickLogin = (email: string, role?: Role) => {
-    setLoginEmail(email);
-    setLoginPassword('demo123');
-    setAuthMode('login');
-    setErrorMessage(null);
-    login(email, 'demo123', role);
   };
 
   return (
@@ -136,7 +94,7 @@ export const AuthPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg px-4 sm:px-0">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="bg-slate-800/90 backdrop-blur-md py-8 px-6 shadow-2xl rounded-2xl border border-slate-700/80 sm:px-10 text-xs">
           {/* Segmented Auth Mode Switcher */}
           <div className="flex items-center p-1 bg-slate-900/80 rounded-xl mb-6 border border-slate-700/50">
@@ -152,7 +110,7 @@ export const AuthPage: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Sign In to Workspace
+              Sign In
             </button>
             <button
               type="button"
@@ -166,7 +124,7 @@ export const AuthPage: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Create Student Account
+              Student Registration
             </button>
           </div>
 
@@ -192,7 +150,7 @@ export const AuthPage: React.FC = () => {
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="e.g. dubeysoumya8@gmail.com"
+                    placeholder="Enter your registered email"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -209,7 +167,7 @@ export const AuthPage: React.FC = () => {
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="Enter account password"
+                    placeholder="Enter your account password"
                     className="w-full pl-9 pr-10 py-2.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <button
@@ -229,9 +187,11 @@ export const AuthPage: React.FC = () => {
                     defaultChecked
                     className="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500"
                   />
-                  <span>Remember session on this device</span>
+                  <span>Remember session</span>
                 </label>
-                <span className="text-slate-500">Default: demo123</span>
+                <span className="text-slate-400 hover:text-slate-300 cursor-pointer text-[11px]">
+                  Forgot password?
+                </span>
               </div>
 
               <button
@@ -243,39 +203,9 @@ export const AuthPage: React.FC = () => {
                 {!loading && <ArrowRight className="w-4 h-4" />}
               </button>
 
-              {/* 1-Click Demo Accounts Section */}
-              <div className="mt-6 pt-5 border-t border-slate-700/60">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-2.5 text-center">
-                  Or Sign In with 1-Click Demo Credentials
-                </span>
-
-                <div className="grid grid-cols-1 gap-2">
-                  {demoAccounts.map((acc) => (
-                    <button
-                      key={`${acc.email}-${acc.role}`}
-                      type="button"
-                      onClick={() => handleQuickLogin(acc.email, acc.role)}
-                      className="p-2.5 rounded-xl border border-slate-700/80 bg-slate-900/50 hover:bg-slate-700/50 hover:border-slate-600 text-left transition-all flex items-center justify-between group cursor-pointer"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-200 group-hover:text-white">
-                            {acc.name}
-                          </span>
-                          <span className="text-[9px] uppercase font-bold text-indigo-400 bg-indigo-950/70 border border-indigo-800/60 px-1.5 py-0.2 rounded">
-                            {acc.role}
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-slate-400 block font-mono">
-                          {acc.email}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-indigo-400 group-hover:text-indigo-300 font-medium">
-                        Select →
-                      </span>
-                    </button>
-                  ))}
-                </div>
+              <div className="pt-4 border-t border-slate-700/50 flex items-center justify-center gap-1.5 text-slate-500 text-[11px]">
+                <Shield className="w-3.5 h-3.5 text-slate-400" />
+                <span>Protected by role-based access control</span>
               </div>
             </form>
           ) : (
@@ -308,7 +238,7 @@ export const AuthPage: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="rahul@example.com"
+                    placeholder="student@example.com"
                     value={signupData.email}
                     onChange={(e) =>
                       setSignupData({ ...signupData, email: e.target.value })
@@ -341,7 +271,7 @@ export const AuthPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="+91 98765 00000"
+                    placeholder="+91 98000 00000"
                     value={signupData.phone}
                     onChange={(e) =>
                       setSignupData({ ...signupData, phone: e.target.value })

@@ -53,7 +53,7 @@ export const BackendDocsModal: React.FC<BackendDocsModalProps> = ({ isOpen, onCl
           name: 'Aman Sharma',
           email: 'aman@example.com',
           password: 'password123',
-          phone: '+91 98765 44321',
+          phone: '+91 98000 00020',
           college: 'IIT Delhi',
           degree: 'B.Tech CSE',
           cgpa: 8.8,
@@ -85,7 +85,7 @@ export const BackendDocsModal: React.FC<BackendDocsModalProps> = ({ isOpen, onCl
         {
           name: 'Neha Kapoor',
           email: 'neha@example.com',
-          phone: '+91 98765 88990',
+          phone: '+91 98000 00021',
           batchId: 'b-1',
           college: 'BITS Pilani',
           degree: 'B.E CSE',
