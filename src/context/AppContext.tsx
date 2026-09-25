@@ -13,6 +13,9 @@ import {
   AttendanceStatus,
   ApplicationStage,
   AttentionItem,
+  AuditLogEntry,
+  AuditActionType,
+  AuditCategory,
 } from '../types';
 import {
   INITIAL_USERS,
@@ -24,6 +27,7 @@ import {
   INITIAL_PROJECTS,
   INITIAL_OPENINGS,
   INITIAL_APPLICATIONS,
+  INITIAL_AUDIT_LOGS,
 } from '../data/mockData';
 import { apiClient, getStoredToken, setStoredToken } from '../api/client';
 
@@ -118,6 +122,19 @@ interface AppContextType {
   exportCsv: (category: 'students' | 'attendance' | 'placements') => void;
   notification: string | null;
   setNotification: (msg: string | null) => void;
+
+  // Audit Logs (Admin only visibility)
+  auditLogs: AuditLogEntry[];
+  logAuditAction: (params: {
+    action: AuditActionType;
+    category: AuditCategory;
+    description: string;
+    targetEntityId?: string;
+    targetEntityName?: string;
+    metadata?: Record<string, any>;
+  }) => void;
+  exportAuditLogsToCsv: () => void;
+  clearAuditLogs: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -133,6 +150,7 @@ const STORAGE_KEYS = {
   PROJECTS: 'careerbridge_projects_v1',
   OPENINGS: 'careerbridge_openings_v1',
   APPLICATIONS: 'careerbridge_apps_v1',
+  AUDIT: 'careerbridge_audit_logs_v1',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -217,6 +235,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_APPLICATIONS;
   });
 
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.AUDIT);
+    if (saved) {
+      try { return JSON.parse(saved); } catch { /* ignore */ }
+    }
+    return INITIAL_AUDIT_LOGS;
+  });
+
   // Sync state with backend on mount
   useEffect(() => {
     async function syncFromBackend() {
@@ -286,6 +312,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.APPLICATIONS, JSON.stringify(applications));
   }, [applications]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(auditLogs));
+  }, [auditLogs]);
+
   // Auto clear notification
   useEffect(() => {
     if (notification) {
@@ -296,6 +326,77 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const showNotification = (msg: string | null) => {
     setNotification(msg);
+  };
+
+  const logAuditAction = (params: {
+    action: AuditActionType;
+    category: AuditCategory;
+    description: string;
+    targetEntityId?: string;
+    targetEntityName?: string;
+    metadata?: Record<string, any>;
+  }) => {
+    const newEntry: AuditLogEntry = {
+      id: `aud-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5)}`,
+      action: params.action,
+      category: params.category,
+      description: params.description,
+      performedBy: {
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
+      },
+      targetEntityId: params.targetEntityId,
+      targetEntityName: params.targetEntityName,
+      metadata: params.metadata,
+      timestamp: new Date().toISOString(),
+    };
+    setAuditLogs((prev) => [newEntry, ...prev]);
+  };
+
+  const clearAuditLogs = () => {
+    setAuditLogs([]);
+    showNotification('Audit log history cleared.');
+  };
+
+  const exportAuditLogsToCsv = () => {
+    const headers = [
+      'Event ID',
+      'Timestamp (ISO)',
+      'Action Type',
+      'Category',
+      'Description',
+      'Actor Name',
+      'Actor Email',
+      'Actor Role',
+      'Target Entity ID',
+      'Target Entity Name',
+      'Metadata Details',
+    ];
+    const rows = auditLogs.map((log) => [
+      log.id,
+      log.timestamp,
+      log.action,
+      log.category,
+      `"${(log.description || '').replace(/"/g, '""')}"`,
+      `"${(log.performedBy.name || '').replace(/"/g, '""')}"`,
+      log.performedBy.email,
+      log.performedBy.role,
+      `"${(log.targetEntityId || '').replace(/"/g, '""')}"`,
+      `"${(log.targetEntityName || '').replace(/"/g, '""')}"`,
+      `"${JSON.stringify(log.metadata || {}).replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `careerbridge_audit_logs_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification(`Exported ${auditLogs.length} audit records to CSV.`);
   };
 
   // Auth functions
@@ -439,10 +540,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Sync with backend API
     apiClient.createStudent(newStudent).catch(() => {});
     showNotification(`Student "${newStudent.name}" enrolled into ${newStudent.batchName}.`);
+
+    // Record institutional audit event
+    logAuditAction({
+      action: 'STUDENT_ADDED',
+      category: 'STUDENT',
+      description: `Enrolled new student "${newStudent.name}" (${newStudent.rollNo}) into cohort "${newStudent.batchName}".`,
+      targetEntityId: newStudent.id,
+      targetEntityName: newStudent.name,
+      metadata: {
+        rollNo: newStudent.rollNo,
+        batchName: newStudent.batchName,
+        email: newStudent.email,
+        college: newStudent.college,
+        degree: newStudent.degree,
+        cgpa: newStudent.cgpa,
+      },
+    });
+
     return newStudent;
   };
 
   const updateStudent = (id: string, updates: Partial<Student>) => {
+    const existingStudent = students.find((s) => s.id === id);
     setStudents((prev) =>
       prev.map((s) => {
         if (s.id === id) {
@@ -458,6 +578,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
     apiClient.updateStudent(id, updates).catch(() => {});
     showNotification('Student details updated.');
+
+    // Record institutional audit event
+    logAuditAction({
+      action: 'PROFILE_UPDATED',
+      category: 'STUDENT',
+      description: `Updated profile details for student "${existingStudent?.name || id}" (${existingStudent?.rollNo || id}).`,
+      targetEntityId: id,
+      targetEntityName: existingStudent?.name,
+      metadata: updates,
+    });
   };
 
   const deleteStudent = (id: string) => {
@@ -465,6 +595,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setStudents((prev) => prev.filter((s) => s.id !== id));
     apiClient.deleteStudent(id).catch(() => {});
     showNotification(`Student "${target?.name || id}" removed from directory.`);
+
+    // Record institutional audit event
+    logAuditAction({
+      action: 'STUDENT_DELETED',
+      category: 'STUDENT',
+      description: `Permanently removed student "${target?.name || id}" (${target?.rollNo || id}) from directory.`,
+      targetEntityId: id,
+      targetEntityName: target?.name,
+      metadata: { rollNo: target?.rollNo, email: target?.email, batch: target?.batchName },
+    });
   };
 
   const addBatch = (batchData: Omit<Batch, 'id'>) => {
@@ -473,15 +613,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBatches((prev) => [...prev, newBatch]);
     apiClient.createBatch(newBatch).catch(() => {});
     showNotification(`New cohort "${newBatch.name}" created.`);
+
+    // Record institutional audit event
+    logAuditAction({
+      action: 'BATCH_CREATED',
+      category: 'BATCH',
+      description: `Created new training cohort "${newBatch.name}" [${newBatch.code}] assigned to trainer ${newBatch.trainerName}.`,
+      targetEntityId: newBatch.id,
+      targetEntityName: newBatch.name,
+      metadata: {
+        code: newBatch.code,
+        course: newBatch.course,
+        capacity: newBatch.capacity,
+        mode: newBatch.mode,
+        trainerName: newBatch.trainerName,
+        schedule: newBatch.schedule,
+      },
+    });
+
     return newBatch;
   };
 
   const updateBatch = (id: string, updates: Partial<Batch>) => {
+    const existingBatch = batches.find((b) => b.id === id);
     setBatches((prev) =>
       prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
     );
     apiClient.updateBatch(id, updates).catch(() => {});
     showNotification('Batch details updated.');
+
+    // Record institutional audit event
+    logAuditAction({
+      action: 'BATCH_UPDATED',
+      category: 'BATCH',
+      description: `Modified cohort specifications for "${existingBatch?.name || id}" [${existingBatch?.code || ''}].`,
+      targetEntityId: id,
+      targetEntityName: existingBatch?.name,
+      metadata: updates,
+    });
   };
 
   const recordBatchAttendance = (
@@ -523,6 +692,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     apiClient.recordAttendance(batchId, date, records).catch(() => {});
     showNotification(`Attendance for session (${date}) recorded successfully for ${records.length} students.`);
+
+    const targetBatch = batches.find((b) => b.id === batchId);
+    const presentCount = records.filter((r) => r.status === 'PRESENT').length;
+    const absentCount = records.filter((r) => r.status === 'ABSENT').length;
+    logAuditAction({
+      action: 'ATTENDANCE_RECORDED',
+      category: 'ATTENDANCE',
+      description: `Logged roll call for cohort "${targetBatch?.name || batchId}" on ${date}: ${presentCount} present, ${absentCount} absent.`,
+      targetEntityId: batchId,
+      targetEntityName: targetBatch?.name,
+      metadata: {
+        batchName: targetBatch?.name,
+        date,
+        totalEnrolled: records.length,
+        presentCount,
+        absentCount,
+      },
+    });
   };
 
   const addMockTest = (testData: Omit<MockTest, 'id' | 'results'>) => {
@@ -886,6 +1073,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         exportCsv,
         notification,
         setNotification: showNotification,
+        auditLogs,
+        logAuditAction,
+        exportAuditLogsToCsv,
+        clearAuditLogs,
       }}
     >
       {children}

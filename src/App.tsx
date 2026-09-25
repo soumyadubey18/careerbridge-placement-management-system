@@ -15,6 +15,7 @@ import { AssessmentsView } from './components/AssessmentsView';
 import { ProjectsView } from './components/ProjectsView';
 import { PlacementsView } from './components/PlacementsView';
 import { StudentPortalView } from './components/StudentPortalView';
+import { AuditLogView } from './components/AuditLogView';
 import { AuthPage } from './components/AuthPage';
 import { AddStudentModal } from './components/AddStudentModal';
 import { AddBatchModal } from './components/AddBatchModal';
@@ -87,6 +88,8 @@ function MainLayout() {
           {activeTab === 'placements' && <PlacementsView />}
 
           {activeTab === 'my-portal' && <StudentPortalView />}
+
+          {activeTab === 'audit-log' && <AuditLogView />}
         </main>
       </div>
 

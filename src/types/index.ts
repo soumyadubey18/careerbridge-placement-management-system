@@ -167,3 +167,40 @@ export interface AttentionItem {
   severity: 'high' | 'medium' | 'low';
   targetTab: string;
 }
+
+export type AuditActionType =
+  | 'STUDENT_ADDED'
+  | 'STUDENT_UPDATED'
+  | 'STUDENT_DELETED'
+  | 'BATCH_CREATED'
+  | 'BATCH_UPDATED'
+  | 'PROFILE_UPDATED'
+  | 'ATTENDANCE_RECORDED'
+  | 'MOCK_TEST_SCHEDULED'
+  | 'TEST_SCORE_RECORDED'
+  | 'INTERVIEW_SCHEDULED'
+  | 'INTERVIEW_EVALUATED'
+  | 'PROJECT_CREATED'
+  | 'PROJECT_EVALUATED'
+  | 'JOB_OPENING_POSTED'
+  | 'APPLICATION_STAGE_CHANGED'
+  | 'SYSTEM_RESET';
+
+export type AuditCategory = 'STUDENT' | 'BATCH' | 'ATTENDANCE' | 'ACADEMIC' | 'PLACEMENT' | 'SECURITY';
+
+export interface AuditLogEntry {
+  id: string;
+  action: AuditActionType;
+  category: AuditCategory;
+  description: string;
+  performedBy: {
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+  };
+  targetEntityId?: string;
+  targetEntityName?: string;
+  metadata?: Record<string, any>;
+  timestamp: string; // ISO string
+}

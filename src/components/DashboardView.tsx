@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Sparkles,
   Server,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { DashboardAnalytics } from './DashboardAnalytics';
@@ -114,6 +115,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <Server className="w-4 h-4 text-indigo-600" />
               <span>Backend API</span>
+            </button>
+          )}
+
+          {currentUser.role === 'ADMIN' && (
+            <button
+              onClick={() => setActiveTab('audit-log')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+              title="View Institutional Security & Audit Log"
+            >
+              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <span>Audit Log</span>
             </button>
           )}
         </div>

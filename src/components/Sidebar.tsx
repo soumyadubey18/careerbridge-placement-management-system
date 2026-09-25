@@ -10,6 +10,7 @@ import {
   GraduationCap,
   AlertCircle,
   Building2,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -94,6 +95,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobileMenu }) => {
       badge: currentUser.role === 'STUDENT' ? 'Active' : 'Preview',
       badgeColor: 'text-purple-700 bg-purple-50 border-purple-200',
       visibleTo: ['ADMIN', 'TRAINER', 'PLACEMENT', 'STUDENT'],
+    },
+    {
+      id: 'audit-log',
+      label: 'Security & Audit Log',
+      icon: ShieldCheck,
+      badge: 'Admin',
+      badgeColor: 'text-indigo-700 bg-indigo-50 border-indigo-200',
+      visibleTo: ['ADMIN'],
     },
   ];
 
