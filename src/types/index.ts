@@ -60,6 +60,8 @@ export interface Student {
   skills: string[];
   attendancePercentage: number;
   notes?: string;
+  placedCompany?: string;
+  placedSalary?: string;
 }
 
 export interface TestResult {
