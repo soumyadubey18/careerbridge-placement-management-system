@@ -143,6 +143,7 @@ export interface JobOpening {
   openingsCount: number;
   status: 'OPEN' | 'INTERVIEWING' | 'CLOSED';
   description: string;
+  requiredSkills?: string[];
 }
 
 export interface PlacementApplication {

@@ -13,8 +13,11 @@ import {
   Github,
   DollarSign,
   MapPin,
+  FileDown,
+  Award,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generateCertificatePdf } from '../utils/generateDocumentsPdf';
 
 export const StudentPortalView: React.FC = () => {
   const {
@@ -28,6 +31,7 @@ export const StudentPortalView: React.FC = () => {
     openings,
     applications,
     applyForJob,
+    setNotification,
   } = useApp();
 
   // Find student matching currentUser email, or default to first student
@@ -110,7 +114,7 @@ export const StudentPortalView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/90 text-right min-w-[140px] shadow-2xs">
             <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">My Attendance</span>
             <span
@@ -126,6 +130,21 @@ export const StudentPortalView: React.FC = () => {
               {isAttendanceEligible ? 'Placement Eligible ✓' : 'Deficit (<75%) ⚠'}
             </span>
           </div>
+
+          <button
+            onClick={() => {
+              generateCertificatePdf({ student, batch: studentBatch });
+              setNotification(`Downloaded Official Certificate of Completion for ${student.name}!`);
+            }}
+            className="px-3.5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+            title="Download Accredited Course Completion Certificate PDF"
+          >
+            <Award className="w-4 h-4 text-indigo-200" />
+            <div className="text-left">
+              <span className="block leading-none">Completion Certificate</span>
+              <span className="text-[10px] text-indigo-200 font-normal">Official PDF Document</span>
+            </div>
+          </button>
         </div>
       </div>
 

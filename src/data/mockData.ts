@@ -483,6 +483,7 @@ export const INITIAL_OPENINGS: JobOpening[] = [
     openingsCount: 6,
     status: 'OPEN',
     description: 'Looking for high-caliber backend engineers passionate about functional programming, low-latency transaction processing, and distributed systems.',
+    requiredSkills: ['Java', 'Spring Boot', 'PostgreSQL', 'Microservices', 'Docker', 'Redis'],
   },
   {
     id: 'job-2',
@@ -499,6 +500,7 @@ export const INITIAL_OPENINGS: JobOpening[] = [
     openingsCount: 12,
     status: 'OPEN',
     description: 'Designing mission-critical embedded cloud consoles, telemetry pipelines, and automotive companion web applications.',
+    requiredSkills: ['React', 'TypeScript', 'Node.js', 'Docker', 'AWS', 'REST APIs'],
   },
   {
     id: 'job-3',
@@ -515,6 +517,7 @@ export const INITIAL_OPENINGS: JobOpening[] = [
     openingsCount: 4,
     status: 'OPEN',
     description: 'Build fast, resilient checkout experiences that process millions of transactions per hour across browsers and mobile webviews.',
+    requiredSkills: ['React', 'TypeScript', 'Tailwind CSS', 'Redux', 'Jest', 'Next.js'],
   },
   {
     id: 'job-4',
@@ -531,6 +534,7 @@ export const INITIAL_OPENINGS: JobOpening[] = [
     openingsCount: 8,
     status: 'OPEN',
     description: 'Assist enterprise data teams in developing NLP pipelines, structured tabular estimators, and containerized model inference endpoints.',
+    requiredSkills: ['Python', 'PyTorch', 'Scikit-Learn', 'Pandas', 'FastAPI', 'Docker'],
   },
 ];
 

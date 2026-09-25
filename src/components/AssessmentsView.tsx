@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   FileCheck2,
   Calendar,
@@ -12,9 +12,16 @@ import {
   CheckCircle2,
   Star,
   MessageSquare,
+  CalendarDays,
+  AlertTriangle,
+  Download,
+  Sparkles,
+  Share2,
+  Filter,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { MockTest, Interview, InterviewRound } from '../types';
+import { generateIcsInvite, detectInterviewConflicts } from '../utils/calendarUtils';
 
 export const AssessmentsView: React.FC = () => {
   const {
@@ -26,9 +33,17 @@ export const AssessmentsView: React.FC = () => {
     updateTestScore,
     addInterview,
     updateInterview,
+    setNotification,
+    logAuditAction,
   } = useApp();
 
-  const [activeSubTab, setActiveSubTab] = useState<'tests' | 'interviews'>('tests');
+  const [activeSubTab, setActiveSubTab] = useState<'tests' | 'interviews' | 'calendar'>('tests');
+  const [calendarFilterRound, setCalendarFilterRound] = useState<string>('ALL');
+
+  const { conflictMap, conflictCount } = useMemo(
+    () => detectInterviewConflicts(interviews),
+    [interviews]
+  );
 
   // Modals
   const [showAddTestModal, setShowAddTestModal] = useState(false);
@@ -110,12 +125,12 @@ export const AssessmentsView: React.FC = () => {
 
         <div className="flex items-center gap-2">
           {/* Sub-tab switcher */}
-          <div className="flex items-center p-1 bg-slate-100 rounded-lg text-xs font-medium">
+          <div className="flex items-center p-1 bg-slate-100 rounded-xl text-xs font-semibold">
             <button
               onClick={() => setActiveSubTab('tests')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activeSubTab === 'tests'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -123,20 +138,34 @@ export const AssessmentsView: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveSubTab('interviews')}
-              className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activeSubTab === 'interviews'
-                  ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Mock Interviews ({interviews.length})
+              Interview Roster ({interviews.length})
+            </button>
+            <button
+              onClick={() => setActiveSubTab('calendar')}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeSubTab === 'calendar'
+                  ? 'bg-indigo-600 text-white shadow-2xs font-bold'
+                  : 'text-indigo-700 bg-indigo-50/60 hover:bg-indigo-100'
+              }`}
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>Calendar Engine</span>
+              {conflictCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse ml-0.5" />
+              )}
             </button>
           </div>
 
           {activeSubTab === 'tests' ? (
             <button
               onClick={() => setShowAddTestModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors shadow-2xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Schedule Test</span>
@@ -144,10 +173,10 @@ export const AssessmentsView: React.FC = () => {
           ) : (
             <button
               onClick={() => setShowAddInterviewModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors shadow-2xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Schedule Interview</span>
+              <span>Schedule Interview Slot</span>
             </button>
           )}
         </div>
@@ -320,6 +349,215 @@ export const AssessmentsView: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Subtab 3: Interview Calendar & Scheduling Engine */}
+      {activeSubTab === 'calendar' && (
+        <div className="space-y-5">
+          {/* Calendar Controls & Conflict Analysis Bar */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Filter className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Filter by Round:</span>
+              </label>
+              <select
+                value={calendarFilterRound}
+                onChange={(e) => setCalendarFilterRound(e.target.value)}
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="ALL">All Rounds ({interviews.length})</option>
+                <option value="Technical 1">Technical 1</option>
+                <option value="Technical 2">Technical 2</option>
+                <option value="System Design">System Design</option>
+                <option value="HR & Behavioral">HR & Behavioral</option>
+                <option value="Director Round">Director Round</option>
+              </select>
+            </div>
+
+            {/* Conflict Detection Status */}
+            <div className="flex items-center gap-2">
+              {conflictCount > 0 ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-bold">
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  <span>{conflictCount} Scheduling Conflict{conflictCount > 1 ? 's' : ''} Detected</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Conflict-Free Schedule</span>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowAddInterviewModal(true)}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Slot</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Grouped Date-wise Interview Timeline */}
+          {(() => {
+            const filteredInterviews = interviews.filter(
+              (i) => calendarFilterRound === 'ALL' || i.round === calendarFilterRound
+            );
+
+            // Group by Date string (e.g. "2026-10-05")
+            const dateGroups: Record<string, Interview[]> = {};
+            filteredInterviews.forEach((item) => {
+              const dateKey = item.scheduledDate.split(' ')[0] || 'Unscheduled';
+              if (!dateGroups[dateKey]) dateGroups[dateKey] = [];
+              dateGroups[dateKey].push(item);
+            });
+
+            const sortedDates = Object.keys(dateGroups).sort();
+
+            if (sortedDates.length === 0) {
+              return (
+                <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-400 text-xs">
+                  No interview slots match the selected criteria.
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-6">
+                {sortedDates.map((dateStr) => {
+                  const daySlots = dateGroups[dateStr];
+                  const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString(
+                    'en-US',
+                    { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
+                  );
+
+                  return (
+                    <div key={dateStr} className="space-y-3">
+                      {/* Date Header Pill */}
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
+                          <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                            {formattedDate}
+                          </h3>
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                          {daySlots.length} {daySlots.length === 1 ? 'Session' : 'Sessions'}
+                        </span>
+                      </div>
+
+                      {/* Slots Cards Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {daySlots.map((item) => {
+                          const time = item.scheduledDate.split(' ')[1] || '10:00';
+                          const hasConflict = conflictMap[item.id];
+                          const student = students.find((s) => s.id === item.studentId);
+
+                          return (
+                            <div
+                              key={item.id}
+                              className={`bg-white rounded-2xl border p-4.5 shadow-2xs hover:border-indigo-300 transition-all card-hover-effect flex flex-col justify-between ${
+                                hasConflict
+                                  ? 'border-rose-300 bg-rose-50/20'
+                                  : 'border-slate-200/90'
+                              }`}
+                            >
+                              <div className="space-y-2.5">
+                                {/* Header: Time and Round Badge */}
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                    <Clock className="w-3.5 h-3.5 text-indigo-600" />
+                                    <span>{time} hrs</span>
+                                  </div>
+
+                                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                    {item.round}
+                                  </span>
+                                </div>
+
+                                {hasConflict && (
+                                  <div className="flex items-center gap-1 text-[11px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 p-1.5 rounded-lg">
+                                    <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <span>Time overlap detected with another candidate!</span>
+                                  </div>
+                                )}
+
+                                <div>
+                                  <h4 className="text-sm font-bold text-slate-900 leading-snug">
+                                    {item.studentName}
+                                  </h4>
+                                  <p className="text-xs text-slate-500 mt-0.5">
+                                    Cohort: {item.batchName}
+                                  </p>
+                                  {student && (
+                                    <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-1">
+                                      <span>Attd: <strong>{student.attendancePercentage}%</strong></span>
+                                      <span>·</span>
+                                      <span>CGPA: <strong>{student.cgpa}</strong></span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-700 space-y-1">
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-slate-500">Interviewer:</span>
+                                    <span className="font-semibold text-slate-900 truncate max-w-[150px]">
+                                      {item.interviewer}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-slate-500">Status:</span>
+                                    <span className={`font-semibold ${
+                                      item.status === 'COMPLETED' ? 'text-emerald-700' : 'text-blue-700'
+                                    }`}>
+                                      {item.status}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {item.score && (
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                                    <span>Score: {item.score} / 10</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Card Actions: iCal Export and Evaluation */}
+                              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    generateIcsInvite(item);
+                                    setNotification(`Exported .ics calendar invite for ${item.studentName} (${item.round})!`);
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                                  title="Add to Google Calendar, Apple Calendar, or Outlook (.ics)"
+                                >
+                                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                                  <span>.ics Invite</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedInterviewForEval(item)}
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  {item.score ? 'Feedback' : 'Evaluate'}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 

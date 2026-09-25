@@ -19,9 +19,11 @@ import {
   Briefcase,
   Layers,
   Award,
+  FileDown,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Student, StudentStatus } from '../types';
+import { generateCertificatePdf } from '../utils/generateDocumentsPdf';
 
 interface StudentsViewProps {
   onOpenAddModal: () => void;
@@ -407,12 +409,27 @@ export const StudentsView: React.FC<StudentsViewProps> = ({ onOpenAddModal }) =>
                 </div>
               </div>
 
-              <button
-                onClick={() => setViewingStudent(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const stuBatch = batches.find((b) => b.id === viewingStudent.batchId);
+                    generateCertificatePdf({ student: viewingStudent, batch: stuBatch });
+                  }}
+                  className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Download Accredited Course Completion Certificate PDF"
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Certificate PDF</span>
+                </button>
+
+                <button
+                  onClick={() => setViewingStudent(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Profile Tabs */}
