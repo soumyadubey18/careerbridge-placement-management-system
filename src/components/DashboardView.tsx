@@ -136,20 +136,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Metric 1: Students */}
         <div
           onClick={() => setActiveTab('students')}
-          className="p-4 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer group"
+          className="p-5 bg-white rounded-2xl border border-slate-200/90 border-t-4 border-t-indigo-600 shadow-2xs card-hover-effect cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Enrolled Students</span>
-            <Users className="w-4 h-4 text-indigo-600" />
+            <span className="font-semibold text-slate-600 uppercase tracking-wider text-[10px]">Enrolled Students</span>
+            <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-2xs">
+              <Users className="w-4 h-4" />
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{totalStudents}</span>
-            <span className="text-xs text-emerald-600 font-medium">{activeStudents} Active</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{totalStudents}</span>
+            <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full font-semibold">
+              {activeStudents} Active
+            </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between pt-2 border-t border-slate-100">
-            <span>{batches.length} Active Cohorts</span>
-            <span className="group-hover:translate-x-0.5 transition-transform flex items-center text-indigo-600">
-              Directory <ChevronRight className="w-3 h-3" />
+          <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between pt-2.5 border-t border-slate-100">
+            <span className="font-medium">{batches.length} Active Cohorts</span>
+            <span className="group-hover:translate-x-1 transition-transform flex items-center text-indigo-600 font-semibold">
+              Directory <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
             </span>
           </div>
         </div>
@@ -157,20 +161,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Metric 2: Batches */}
         <div
           onClick={() => setActiveTab('batches')}
-          className="p-4 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer group"
+          className="p-5 bg-white rounded-2xl border border-slate-200/90 border-t-4 border-t-blue-600 shadow-2xs card-hover-effect cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Active Cohorts</span>
-            <Layers className="w-4 h-4 text-blue-600" />
+            <span className="font-semibold text-slate-600 uppercase tracking-wider text-[10px]">Active Cohorts</span>
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
+              <Layers className="w-4 h-4" />
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{batches.length}</span>
-            <span className="text-xs text-slate-500">Ongoing Sessions</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{batches.length}</span>
+            <span className="text-xs text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full font-semibold">
+              In Session
+            </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between pt-2 border-t border-slate-100">
-            <span>Capacity 105 Seats</span>
-            <span className="group-hover:translate-x-0.5 transition-transform flex items-center text-blue-600">
-              Batches <ChevronRight className="w-3 h-3" />
+          <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between pt-2.5 border-t border-slate-100">
+            <span className="font-medium">Capacity 105 Seats</span>
+            <span className="group-hover:translate-x-1 transition-transform flex items-center text-blue-600 font-semibold">
+              Batches <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
             </span>
           </div>
         </div>
@@ -178,26 +186,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Metric 3: Attendance Health */}
         <div
           onClick={() => setActiveTab('attendance')}
-          className="p-4 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer group"
+          className="p-5 bg-white rounded-2xl border border-slate-200/90 border-t-4 border-t-emerald-600 shadow-2xs card-hover-effect cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Attendance Average</span>
-            <CalendarCheck2 className="w-4 h-4 text-emerald-600" />
+            <span className="font-semibold text-slate-600 uppercase tracking-wider text-[10px]">Attendance Average</span>
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-2xs">
+              <CalendarCheck2 className="w-4 h-4" />
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{averageAttendance}%</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{averageAttendance}%</span>
             {criticalAttendanceCount > 0 ? (
-              <span className="text-xs text-amber-700 font-medium">
-                {criticalAttendanceCount} Below 75%
+              <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full font-semibold">
+                {criticalAttendanceCount} &lt; 75% Cutoff
               </span>
             ) : (
-              <span className="text-xs text-emerald-600 font-medium">Healthy</span>
+              <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-full font-semibold">
+                100% Compliant
+              </span>
             )}
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between pt-2 border-t border-slate-100">
-            <span>{attendance.length} Logged Sessions</span>
-            <span className="group-hover:translate-x-0.5 transition-transform flex items-center text-emerald-600">
-              Audit <ChevronRight className="w-3 h-3" />
+          <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between pt-2.5 border-t border-slate-100">
+            <span className="font-medium">{attendance.length} Logged Sessions</span>
+            <span className="group-hover:translate-x-1 transition-transform flex items-center text-emerald-600 font-semibold">
+              Audit <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
             </span>
           </div>
         </div>
@@ -205,20 +217,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Metric 4: Placements */}
         <div
           onClick={() => setActiveTab('placements')}
-          className="p-4 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors cursor-pointer group"
+          className="p-5 bg-white rounded-2xl border border-slate-200/90 border-t-4 border-t-purple-600 shadow-2xs card-hover-effect cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 text-xs">
-            <span>Placed Candidates</span>
-            <Briefcase className="w-4 h-4 text-purple-600" />
+            <span className="font-semibold text-slate-600 uppercase tracking-wider text-[10px]">Placed Candidates</span>
+            <div className="p-2 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors shadow-2xs">
+              <Briefcase className="w-4 h-4" />
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{placedStudents}</span>
-            <span className="text-xs text-purple-700 font-medium">{placementRate}% Conversion</span>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-3xl font-extrabold text-purple-950 tracking-tight">{placedStudents}</span>
+            <span className="text-xs text-purple-800 bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded-full font-bold">
+              {placementRate}% Conversion
+            </span>
           </div>
-          <div className="mt-2 text-[11px] text-slate-500 flex items-center justify-between pt-2 border-t border-slate-100">
-            <span>{openings.length} Campus Drives</span>
-            <span className="group-hover:translate-x-0.5 transition-transform flex items-center text-purple-600">
-              Pipeline <ChevronRight className="w-3 h-3" />
+          <div className="mt-3 text-[11px] text-slate-500 flex items-center justify-between pt-2.5 border-t border-slate-100">
+            <span className="font-medium">{openings.length} Campus Drives</span>
+            <span className="group-hover:translate-x-1 transition-transform flex items-center text-purple-600 font-semibold">
+              Pipeline <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
             </span>
           </div>
         </div>

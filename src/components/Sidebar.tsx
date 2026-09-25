@@ -130,27 +130,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobileMenu }) => {
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-900 font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? 'bg-indigo-50/90 text-indigo-950 font-semibold border-l-3 border-indigo-600 shadow-2xs pl-2.5'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 font-medium'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon
-                      className={`w-4 h-4 ${
-                        isActive ? 'text-indigo-600' : 'text-slate-400'
-                      }`}
-                    />
+                    <div className={`p-1 rounded-lg transition-colors ${
+                      isActive ? 'bg-indigo-600 text-white shadow-2xs' : 'text-slate-400 group-hover:text-slate-600'
+                    }`}>
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
                     <span>{item.label}</span>
                   </div>
 
                   {item.badge && (
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-md font-medium border ${
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border shadow-2xs ${
                         item.badgeColor ||
                         (isActive
-                          ? 'bg-indigo-100/70 text-indigo-700 border-indigo-200'
+                          ? 'bg-indigo-100/90 text-indigo-800 border-indigo-200'
                           : 'bg-slate-100 text-slate-600 border-slate-200')
                       }`}
                     >

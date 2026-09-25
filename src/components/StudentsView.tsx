@@ -48,6 +48,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({ onOpenAddModal }) =>
   // Profile modal / drawer
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [profileTab, setProfileTab] = useState<'overview' | 'attendance' | 'tests' | 'interviews' | 'placements'>('overview');
 
   // Filtered students
@@ -80,10 +81,11 @@ export const StudentsView: React.FC<StudentsViewProps> = ({ onOpenAddModal }) =>
     updateStudent(studentId, { status: newStatus });
   };
 
-  const handleDelete = (student: Student) => {
-    if (window.confirm(`Are you sure you want to remove ${student.name} (${student.rollNo}) from the institute directory?`)) {
-      deleteStudent(student.id);
-      if (viewingStudent?.id === student.id) setViewingStudent(null);
+  const confirmDelete = () => {
+    if (studentToDelete) {
+      deleteStudent(studentToDelete.id);
+      if (viewingStudent?.id === studentToDelete.id) setViewingStudent(null);
+      setStudentToDelete(null);
     }
   };
 
@@ -355,8 +357,8 @@ export const StudentsView: React.FC<StudentsViewProps> = ({ onOpenAddModal }) =>
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(student)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 cursor-pointer"
+                            onClick={() => setStudentToDelete(student)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer transition-colors"
                             title="Delete Student"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -840,6 +842,44 @@ export const StudentsView: React.FC<StudentsViewProps> = ({ onOpenAddModal }) =>
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {studentToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-5 border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Remove Student Directory Record</h3>
+                <p className="text-xs text-slate-500">Action is tracked in the institutional audit log</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
+              Are you sure you want to permanently remove <strong className="text-slate-900">{studentToDelete.name}</strong> (Roll No: <span className="font-mono text-indigo-600 font-semibold">{studentToDelete.rollNo}</span>) from the training directory?
+            </p>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setStudentToDelete(null)}
+                className="px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer"
+              >
+                Confirm Removal
+              </button>
+            </div>
           </div>
         </div>
       )}

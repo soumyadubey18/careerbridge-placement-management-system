@@ -75,14 +75,14 @@ export const StudentPortalView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Student Welcome Banner */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-bold text-xl flex items-center justify-center shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-indigo-500 text-white font-bold text-xl flex items-center justify-center shadow-xs ring-4 ring-indigo-50 flex-shrink-0">
             {student.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
                 {student.name}
               </h1>
               <span
@@ -96,27 +96,33 @@ export const StudentPortalView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-500 font-mono mt-0.5">
-              Roll No: {student.rollNo} · {student.degree} ({student.college})
+              Roll No: <span className="font-semibold text-slate-700">{student.rollNo}</span> · {student.degree} ({student.college})
             </p>
-            <div className="text-xs text-slate-600 mt-1 flex items-center gap-2">
-              <span>Cohort: <strong className="text-slate-800">{student.batchName}</strong></span>
+            <div className="text-xs text-slate-600 mt-1.5 flex items-center gap-2 flex-wrap">
+              <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium text-[11px]">
+                Cohort: <strong className="text-slate-900">{student.batchName}</strong>
+              </span>
               <span>·</span>
-              <span>Academic CGPA: <strong className="text-indigo-600">{student.cgpa}</strong></span>
+              <span className="bg-indigo-50 text-indigo-800 border border-indigo-200/60 px-2 py-0.5 rounded-md font-semibold text-[11px]">
+                Academic CGPA: {student.cgpa}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-right min-w-[130px]">
-            <span className="text-[11px] text-slate-400 block font-medium">My Attendance</span>
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/90 text-right min-w-[140px] shadow-2xs">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">My Attendance</span>
             <span
-              className={`text-xl font-bold font-mono ${
+              className={`text-2xl font-black font-mono tracking-tight ${
                 isAttendanceEligible ? 'text-emerald-600' : 'text-rose-600'
               }`}
             >
               {student.attendancePercentage}%
             </span>
-            <span className="block text-[10px] text-slate-500 mt-0.5">
+            <span className={`block text-[10px] font-semibold mt-0.5 ${
+              isAttendanceEligible ? 'text-emerald-700' : 'text-rose-700'
+            }`}>
               {isAttendanceEligible ? 'Placement Eligible ✓' : 'Deficit (<75%) ⚠'}
             </span>
           </div>
