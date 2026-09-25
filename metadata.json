@@ -1,0 +1,6 @@
+{
+  "name": "CareerBridge - Training & Placement Management System",
+  "description": "Comprehensive operational workspace for training institutes to manage student cohorts, attendance tracking, mock assessments, interview evaluations, project reviews, and campus placement drives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
